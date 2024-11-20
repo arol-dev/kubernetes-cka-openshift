@@ -5,7 +5,7 @@ Este repositorio contiene un laboratorio diseñado para aprender a trabajar con 
 
 ## Prerrequisitos
 - **Registro en la Sandbox de Red Hat OpenShift**:
-   - Regístrate en la [Sandbox de OpenShift](https://www.redhat.com/en/openshift-sandbox).
+   - Regístrate en la [Sandbox de OpenShift](https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/auth?client_id=cloud-services&redirect_uri=https%3A%2F%2Fconsole.redhat.com%2Fopenshift%2Foverview&response_type=code&scope=openid&nonce=acf49cfd-a545-433c-a231-6ead21cda073&state=91ea2b9791534a93b455cb4c1db5329e&response_mode=fragment).
    - Accede a tu cuenta personal y asegúrate de tener un entorno funcional.
 - **Herramientas necesarias**:
    - CLI de OpenShift (`oc`), ya preinstalada en la Sandbox.
@@ -22,9 +22,16 @@ Este repositorio contiene un laboratorio diseñado para aprender a trabajar con 
 - Desplegar aplicaciones desde repositorios Git y manifiestos YAML.
 
 ## Paso 1: Acceso a la Sandbox
-- Dirígete a la [consola de OpenShift](https://console-openshift-console.apps.sandbox-m3.1530.p1.openshiftapps.com/).
+- Dirígete a la [Overview console de Red Hat](https://console.redhat.com/openshift/overview)
 - Usa las credenciales de tu cuenta Red Hat para iniciar sesión.
-- Una vez dentro, utiliza la consola gráfica o el terminal en la esquina superior derecha para ejecutar los comandos.
+- Una vez dentro, dirigete a *Developer Sandbox*
+
+![Developer Sandbox](assets/images/developer-sandbox.PNG)
+![Developer Sandbox Openshift](assets/images/developer-sandbox_2.PNG)
+
+- Una vez dentro de la Developer Sandbox, podras utilizar las funcionalidades gráfica para crear los recursos o el terminal en la esquina superior derecha para ejecutar los comandos.
+
+![Developer Sandbox console](assets/images/developer_sandbox_console.PNG)
 
 ## Paso 2: Crear un nuevo proyecto (namespace)
 - Configura tu entorno de trabajo con el siguiente comando:
