@@ -41,6 +41,7 @@ Este repositorio contiene un laboratorio diseñado para aprender a trabajar con 
   > Este comando establece el namespace o proyecto en el cual trabajarás.
 
 ## Lab 1: Despliegue de Aplicaciones
+
 Desplegar una aplicación desde un repositorio Git local:
 
 1. Clona el repositorio de ejemplo:
@@ -61,6 +62,156 @@ Desplegar una aplicación desde un repositorio Git local:
   oc start-build s2i-nginx --from-dir=.
   ```
   > `oc start-build` inicia la construcción con el contenido local. Este comando tomará los archivos presentes en el directorio actual para construir la imagen.
+
+## Lab 2: Importar e Instalar Aplicaciones
+
+1. Importar la imagen de Python desde el registro de Red Hat:
+  ```bash
+  oc import-image rhel9/python-39:9.5-1730569177 --from=registry.redhat.io/rhel9/python-39:9.5-1730569177 --confirm
+  ```
+  > Este comando importa una imagen Docker del registro de Red Hat al registro local de OpenShift.
+
+2. Crear una nueva aplicación desde la imagen:
+  ```bash
+  oc new-app --image-stream="marcoglorioso1594-dev/python-39:9.5-1730569177"
+  ```
+  > `oc new-app` crea una nueva aplicación en OpenShift, utilizando el flujo de imagen importado.
+
+## Lab 3: Resolución de Problemas en Pods (CrashLoopBackOff)
+
+Kubernetes tiene la limitación de que no se puede acceder a un pod cuando está en estado `CrashLoopBackOff`. Para solucionar esto, se puede utilizar `oc debug`:
+```bash
+oc debug deployment/<nombre-del-despliegue>
+```
+> Este comando permite ejecutar una sesión de depuración, creando una copia del contenedor del despliegue, pero con acceso interactivo.
+
+## Lab 4: Despliegue Blue-Green
+
+1. Crear una instancia de la aplicación con una plantilla:
+  ```bash
+  oc new-app --template=openshift/nginx-example --name=my-nginx-example-v1 --param=NAME=my-nginx-example-v1
+  ```
+  > `oc new-app` genera un despliegue a partir de la plantilla `nginx-example`, con el nombre especificado.
+
+2. Probar la aplicación en el navegador:
+   - [http://my-nginx-example-v1-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com/](http://my-nginx-example-v1-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com/)
+   > La URL de la aplicación se genera automáticamente mediante una ruta definida en OpenShift.
+
+3. Probar con una llamada `curl`:
+  ```bash
+  curl -sS -D - $(oc get route my-nginx-example-v1 -o jsonpath='{.spec.host}') -o /dev/null | grep server
+  ```
+  > Utiliza `curl` para hacer una solicitud HTTP a la aplicación y muestra información del servidor.
+
+4. Desplegar una segunda versión de la aplicación (Blue-Green):
+  ```bash
+  oc new-app --template=openshift/nginx-example --name=my-nginx-example-v2 --param=NAME=my-nginx-example-v2 --param=NGINX_VERSION=1.22-ubi8
+  ```
+  > Despliega una nueva versión con una versión diferente de NGINX.
+
+5. Implementar el cambio de rutas:
+  ```bash
+  oc patch route/<nombre-de-la-ruta> -p '{"spec": {"to": {"name": "nuevo-servicio"}}}'
+  ```
+  > `oc patch` permite actualizar las rutas para redirigir el tráfico al nuevo servicio.
+
+6. Verificación:
+  ```bash
+  curl -sS -D - $(oc get route my-nginx-example-v1 -o jsonpath='{.spec.host}') -o /dev/null | grep server
+  ```
+  > Utiliza `curl` para confirmar que la nueva versión del servidor está activa.
+
+## Lab 5: Despliegue Canary
+
+1. Editar la ruta para definir el balanceo de tráfico:
+  ```bash
+  oc edit route my-nginx-example-v1
+  ```
+  > Edita la ruta para establecer los pesos de balanceo entre las dos versiones.
+
+2. Definir configuración de balanceo en el YAML:
+  ```yaml
+  spec:
+    host: my-nginx-example-v1-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com
+    to:
+      kind: Service
+      name: my-nginx-example-v1
+      weight: 50
+    alternateBackends:
+    - kind: Service
+      name: my-nginx-example-v2
+      weight: 50
+    wildcardPolicy: None
+  ```
+  > Define un peso igual entre ambas versiones para un despliegue Canary.
+
+3. Verificación:
+  ```bash
+  for i in $(seq 1 6); do curl -sS -D - $(oc get route my-nginx-example-v1 -o jsonpath='{.spec.host}') -o /dev/null | grep server; done
+  ```
+  > Ejecuta varias solicitudes para confirmar que ambas versiones reciben el tráfico esperado.
+
+## Lab 6: Despliegue de la Aplicación Bookinfo
+- Desplegar la aplicación Bookinfo desde un manifiesto YAML.
+- Crear rutas e ingress para exponer los servicios.
+
+### Paso 1: Desplegar la aplicación con el manifiesto YAML
+
+Utiliza el manifiesto de Bookinfo:
+- [YAML Bookinfo](https://github.com/istio/istio/blob/master/samples/bookinfo/platform/kube/bookinfo.yaml)
+
+Copia el contenido del YAML y realiza el despliegue desde la sección `+ Add` en OpenShift.
+
+### Paso 2: Crear una ruta e ingress
+
+Define el siguiente manifiesto para el `Ingress`:
+```yaml
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: example
+  namespace: marcoglorioso1594-dev
+spec:
+  rules:
+    - host: productpage-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com
+      http:
+        paths:
+          - path: /productpage
+            pathType: Prefix
+            backend:
+              service:
+                name: productpage
+                port:
+                  number: 9080
+          - path: /login
+            pathType: Prefix
+            backend:
+              service:
+                name: productpage
+                port:
+                  number: 9080
+          - path: /logout
+            pathType: Prefix
+            backend:
+              service:
+                name: productpage
+                port:
+                  number: 9080
+          - path: /static
+            pathType: Prefix
+            backend:
+              service:
+                name: productpage
+                port:
+                  number: 9080
+status:
+  loadBalancer:
+    ingress:
+      - hostname: router-default.apps.sandbox-m3.1530.p1.openshiftapps.com
+```
+
+### Verificación
+- Accede a la URL proporcionada para la aplicación y confirma que los diferentes servicios están operativos.
 
 ## Lab 7: Autoescalado Horizontal (Horizontal Pod Autoscaler - HPA)
 
