@@ -59,10 +59,10 @@ Desplegar una aplicación desde un repositorio Git local:
 
    El objeto **BuildConfig** en OpenShift es una definición que describe cómo construir una aplicación en la plataforma. Específicamente, define:
 
-   1. **Origen del código fuente**: De dónde obtener el código (repositorios Git, etc.).
-   2. **Estrategia de construcción**: Cómo construir la aplicación (Docker, S2I - Source-to-Image, etc.).
-   3. **Desencadenantes de construcción**: Eventos que inician una nueva construcción (cambios en el código fuente, actualizaciones de imágenes base, activaciones manuales).
-   4. **Configuración del entorno**: Variables, recursos y opciones necesarias para el proceso de construcción.
+   - **Origen del código fuente**: De dónde obtener el código (repositorios Git, etc.).
+   - **Estrategia de construcción**: Cómo construir la aplicación (Docker, S2I - Source-to-Image, etc.).
+   - **Desencadenantes de construcción**: Eventos que inician una nueva construcción (cambios en el código fuente, actualizaciones de imágenes base, activaciones manuales).
+   - **Configuración del entorno**: Variables, recursos y opciones necesarias para el proceso de construcción.
 
    Puedes ver el objeto **BuildConfig** recién creado en el menú de la derecha, en la sección **Builds**. Allí encontrarás un objeto llamado **s2i-nginx**. En la sección **YAML**, podrás visualizar un manifiesto YAML del tipo **BuildConfig**, correspondiente a la API `build.openshift.io/v1`.
 
@@ -72,6 +72,8 @@ Desplegar una aplicación desde un repositorio Git local:
   ```
   > `oc start-build` inicia la construcción con el contenido local. Este comando tomará los archivos presentes en el directorio actual para construir la imagen.
 
+El comando fallará debido a la ausencia de un archivo de configuración necesario para la imagen Docker en el proyecto de OpenShift. Sin embargo, no te preocupes: este paso se utilizó solo para demostrar cómo es posible construir una imagen Docker a partir de un **BuildConfig** en OpenShift.
+
 ## Lab 2: Importar e Instalar Aplicaciones
 
 1. Importar la imagen de Python desde el registro de Red Hat:
@@ -80,17 +82,26 @@ Desplegar una aplicación desde un repositorio Git local:
   ```
   > Este comando importa una imagen Docker del registro de Red Hat al registro local de OpenShift.
 
+  Puedes ver el objeto **ImageStream** recién descargado en el menú lateral derecho, en modo **Administrador**, dentro de la sección **Builds**. Allí encontrarás un objeto llamado **python-39**. En la sección **YAML**, podrás visualizar un manifiesto YAML del tipo **ImageStream**, correspondiente a la API `image.openshift.io/v1`. Más abajo, encontrarás todos los detalles relacionados con la imagen Docker descargada.
+
 2. Crear una nueva aplicación desde la imagen:
   ```bash
-  oc new-app --image-stream="marcoglorioso1594-dev/python-39:9.5-1730569177"
+  oc new-app --image-stream="<nombre-del-proyecto>/python-39:9.5-1730569177"
   ```
   > `oc new-app` crea una nueva aplicación en OpenShift, utilizando el flujo de imagen importado.
 
+  Deberías ver el siguiente resultado en la línea de comandos:
+
+  ![Oc New App ](assets/images/oc_new_app.PNG)
+
+  Puedes ver la aplicación desplegada en el menú lateral derecho, en modo **Developer**, dentro de la sección **Topology**. Allí encontrarás un objeto llamado **python-39**. Sin embargo, lamentablemente este despliegue fallará nuevamente debido a un error en los pods, que estarán en estado **CrashLoopBackOff**.
+
 ## Lab 3: Resolución de Problemas en Pods (CrashLoopBackOff)
 
-Kubernetes tiene la limitación de que no se puede acceder a un pod cuando está en estado `CrashLoopBackOff`. Para solucionar esto, se puede utilizar `oc debug`:
+En Kubernetes, una limitación común es que no se puede acceder directamente a un pod cuando está en estado **CrashLoopBackOff**. Sin embargo, en entornos OpenShift, puedes utilizar el comando `oc debug` para solucionar este problema creando una copia temporal del pod que está fallando. Esto te permite analizar la causa del error de manera efectiva en un entorno controlado.
+
 ```bash
-oc debug deployment/<nombre-del-despliegue>
+oc debug deployment/python-39
 ```
 > Este comando permite ejecutar una sesión de depuración, creando una copia del contenedor del despliegue, pero con acceso interactivo.
 
@@ -102,8 +113,20 @@ oc debug deployment/<nombre-del-despliegue>
   ```
   > `oc new-app` genera un despliegue a partir de la plantilla `nginx-example`, con el nombre especificado.
 
+  **¿Qué es un template en este contexto Openshift?**
+  Un template en OpenShift es un archivo YAML o JSON que define una serie de recursos de Kubernetes/OpenShift (como pods, servicios o configuraciones de build) junto con parámetros que pueden ser personalizados en el momento de la creación. Esto permite desplegar aplicaciones complejas de forma repetible y con diferentes configuraciones. Puedes pensarlo con un Chart Helm. 
+
+  Para visualizar la definición del template, utiliza el siguiente comando:  
+  ```bash
+  oc get template nginx-example -n openshift -o yaml
+  ```
+
+  Puedes ver la aplicación desplegada en el menú lateral derecho, en modo **Developer**, dentro de la sección **Topology**. Allí encontrarás un objeto llamado **my-nginx-example-v1**. 
+
 2. Probar la aplicación en el navegador:
-   - [http://my-nginx-example-v1-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com/](http://my-nginx-example-v1-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com/)
+
+   Dentro de la sección **Topology**, al hacer clic en el círculo de la aplicación, se abrirá un menú en el lado derecho. Desplázate hacia abajo hasta la sección **Routes**. Copia y pega la ruta proporcionada en tu navegador para visualizar la aplicación desplegada.
+
    > La URL de la aplicación se genera automáticamente mediante una ruta definida en OpenShift.
 
 3. Probar con una llamada `curl`:
@@ -116,13 +139,20 @@ oc debug deployment/<nombre-del-despliegue>
   ```bash
   oc new-app --template=openshift/nginx-example --name=my-nginx-example-v2 --param=NAME=my-nginx-example-v2 --param=NGINX_VERSION=1.22-ubi8
   ```
-  > Despliega una nueva versión con una versión diferente de NGINX.
+  > Despliega una nueva aplicación con una versión diferente de NGINX.
 
 5. Implementar el cambio de rutas:
+
+   Antes de realizar el cambio de ruta, resulta interesante visualizar ambas rutas en la página web. Puedes ver los objetos **Routes**, creados automáticamente por OpenShift, en el menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking**. Allí encontrarás dos objetos de rutas que apuntan a dos servicios diferentes, correspondientes a las dos aplicaciones desplegadas con versiones distintas.
+
   ```bash
-  oc patch route/<nombre-de-la-ruta> -p '{"spec": {"to": {"name": "nuevo-servicio"}}}'
+  oc patch route/my-nginx-example-v1 -p '{"spec": {"to": {"name": "my-nginx-example-v2" }}}'
   ```
-  > `oc patch` permite actualizar las rutas para redirigir el tráfico al nuevo servicio.
+  > `oc patch` permite actualizar las rutas para redirigir el tráfico al nuevo SVC `my-nginx-example-v2`.
+
+  Deberías ver el cambio reflejado en la página web.
+  
+  ![Routes](assets/images/routes.PNG)
 
 6. Verificación:
   ```bash
