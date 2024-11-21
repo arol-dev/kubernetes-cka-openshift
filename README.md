@@ -206,7 +206,7 @@ oc debug deployment/python-39
 
    ![Bookinfo App](assets/images/bookinfo.PNG)
 
-### Paso 2: Crear una ruta
+### Paso 2: Crear una Route
 
 1. Dirígete al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Routes**.
 2. Haz clic en el botón **Create Route**, lo que abrirá un formulario para definir una nueva ruta.
@@ -281,21 +281,15 @@ Además, las rutas suelen incluir configuraciones de seguridad como certificados
 
 ## Lab 7: Autoescalado Horizontal (Horizontal Pod Autoscaler - HPA)
 
-1. Crear un despliegue para una aplicación simple:
+1. Crear un Autoescalador Horizontal para la aplicación:
   ```bash
-  oc new-app --name=my-httpd --docker-image=httpd:latest
-  ```
-  > `oc new-app` crea un despliegue de Apache HTTP Server a partir de una imagen Docker pública.
-
-2. Crear un Autoescalador Horizontal para la aplicación:
-  ```bash
-  oc autoscale deployment/my-httpd --min=1 --max=10 --cpu-percent=50
+  oc autoscale deployment/my-nginx-example-v2 --min=1 --max=10 --cpu-percent=50
   ```
   > `oc autoscale` configura el escalado automático del despliegue `my-httpd` para mantener entre 1 y 10 réplicas, dependiendo del uso de CPU.
 
-3. Generar carga para probar el escalado:
+2. Generar carga para probar el escalado:
   ```bash
-  for i in {1..100}; do curl -s http://$(oc get route my-httpd -o jsonpath='{.spec.host}'); done
+  for i in {1..100}; do curl -s http://$(oc get route my-nginx-example-v2 -o jsonpath='{.spec.host}'); done
   ```
   > Este comando genera múltiples solicitudes HTTP para aumentar la carga de la aplicación y activar el escalado.
 
@@ -303,7 +297,20 @@ Además, las rutas suelen incluir configuraciones de seguridad como certificados
   ```bash
   oc get hpa
   ```
+
+  Verificar los eventos del HPA creado:
+  ```bash
+  oc describe hpa <name hpa>
+  ```
   > Verifica el estado del Autoescalador Horizontal y las métricas de uso de la CPU.
+  
+  Deberías ver algunos eventos como estos:
+  ![HAP events](assets/images/hpa_metrics.PNG)
+
+  Además, puedes visualizar métricas adicionales proporcionadas por OpenShift.
+
+  ![Number Pods Actve](assets/images/pod_number.PNG)
+  ![Deployemnt Metrics](assets/images/deployment_metrics.PNG)
 
 ## Lab 8: Implementación de ConfigMap y Secret
 
@@ -321,13 +328,17 @@ Además, las rutas suelen incluir configuraciones de seguridad como certificados
 
 3. Actualizar el despliegue para usar el ConfigMap y el Secret:
   ```bash
-  oc set env deployment/my-httpd --from=configmap/my-config
-  oc set env deployment/my-httpd --from=secret/my-secret
+  oc set env deployment/my-nginx-example-v2 --from=configmap/my-config
+  oc set env deployment/my-nginx-example-v2 --from=secret/my-secret
   ```
   > `oc set env` agrega variables de entorno al despliegue desde el ConfigMap y el Secret.
 
 4. Verificación:
   ```bash
-  oc describe deployment/my-httpd
+  oc describe deployment/my-nginx-example-v2
   ```
-  > Verifica que el despliegue `my-httpd` tenga las variables de entorno configuradas desde el ConfigMap y el Secret.
+  > Verifica que el despliegue `my-nginx-example-v2` tenga las variables de entorno configuradas desde el ConfigMap y el Secret.
+
+  Puedes verificar que la configuración se haya creado correctamente también desde la página web de la **Developer Sandbox**.
+
+  ![Confimap and Secret](assets/images/configmap_secret.PNG)
