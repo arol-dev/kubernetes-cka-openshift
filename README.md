@@ -151,7 +151,7 @@ oc debug deployment/python-39
   > `oc patch` permite actualizar las rutas para redirigir el tráfico al nuevo SVC `my-nginx-example-v2`.
 
   Deberías ver el cambio reflejado en la página web.
-  
+
   ![Routes](assets/images/routes.PNG)
 
 6. Verificación:
@@ -160,7 +160,7 @@ oc debug deployment/python-39
   ```
   > Utiliza `curl` para confirmar que la nueva versión del servidor está activa.
 
-## Lab 5: Despliegue Canary
+## Lab 5: Traffic shifting or Despliegue Canary
 
 1. Editar la ruta para definir el balanceo de tráfico:
   ```bash
@@ -170,8 +170,8 @@ oc debug deployment/python-39
 
 2. Definir configuración de balanceo en el YAML:
   ```yaml
-  spec:
-    host: my-nginx-example-v1-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com
+  #deja el campo host invariado
+  spec: 
     to:
       kind: Service
       name: my-nginx-example-v1
