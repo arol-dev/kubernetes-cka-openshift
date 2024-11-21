@@ -47,7 +47,7 @@ Desplegar una aplicación desde un repositorio Git local:
 1. Clona el repositorio de ejemplo:
   ```bash
   git clone https://github.com/openshift/source-to-image.git
-  cd examples/nginx-centos7
+  cd source-to-image/examples/nginx-centos7
   ```
   > Aquí clonamos el repositorio localmente y navegamos hasta la carpeta con la aplicación.
 
@@ -55,7 +55,16 @@ Desplegar una aplicación desde un repositorio Git local:
   ```bash
   oc new-build --name s2i-nginx --binary --strategy docker
   ```
-  > `oc new-build` crea un objeto `BuildConfig` para construir una imagen Docker a partir de la fuente local especificada.
+  > `oc new-build` crea un objeto `BuildConfig` para construir una imagen Docker a partir de la fuente local especificada. Este es un objecto clave para automatizar y gestionar la integración continua en OpenShift.
+
+   El objeto **BuildConfig** en OpenShift es una definición que describe cómo construir una aplicación en la plataforma. Específicamente, define:
+
+   1. **Origen del código fuente**: De dónde obtener el código (repositorios Git, etc.).
+   2. **Estrategia de construcción**: Cómo construir la aplicación (Docker, S2I - Source-to-Image, etc.).
+   3. **Desencadenantes de construcción**: Eventos que inician una nueva construcción (cambios en el código fuente, actualizaciones de imágenes base, activaciones manuales).
+   4. **Configuración del entorno**: Variables, recursos y opciones necesarias para el proceso de construcción.
+
+   Puedes ver el objeto **BuildConfig** recién creado en el menú de la derecha, en la sección **Builds**. Allí encontrarás un objeto llamado **s2i-nginx**. En la sección **YAML**, podrás visualizar un manifiesto YAML del tipo **BuildConfig**, correspondiente a la API `build.openshift.io/v1`.
 
 3. Inicia el proceso de construcción:
   ```bash
