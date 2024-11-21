@@ -170,7 +170,7 @@ oc debug deployment/python-39
 
 2. Definir configuración de balanceo en el YAML:
   ```yaml
-  #deja el campo host invariado
+  # Deja el campo **host** sin cambios.
   spec: 
     to:
       kind: Service
@@ -194,25 +194,47 @@ oc debug deployment/python-39
 - Desplegar la aplicación Bookinfo desde un manifiesto YAML.
 - Crear rutas e ingress para exponer los servicios.
 
-### Paso 1: Desplegar la aplicación con el manifiesto YAML
+### Paso 1: Desplegar la aplicación Bookinfo
+1. Utiliza el manifiesto de Bookinfo disponible en este enlace:
+   - [YAML Bookinfo](https://github.com/istio/istio/blob/master/samples/bookinfo/platform/kube/bookinfo.yaml)
 
-Utiliza el manifiesto de Bookinfo:
-- [YAML Bookinfo](https://github.com/istio/istio/blob/master/samples/bookinfo/platform/kube/bookinfo.yaml)
+2. Copia el contenido del archivo YAML y realiza el despliegue desde el menú lateral derecho, en modo **Developer**, dentro de la sección **+ Add**.
 
-Copia el contenido del YAML y realiza el despliegue desde la sección `+ Add` en OpenShift.
+   ![IMPORT YAML](assets/images/import_yaml.PNG)
 
-### Paso 2: Crear una ruta e ingress
+3. Una vez desplegado, en el menú lateral derecho, en modo **Developer**, dentro de la sección **Topology**, podrás visualizar los diferentes componentes de la aplicación **Bookinfo** desplegados en el clúster de OpenShift.
 
-Define el siguiente manifiesto para el `Ingress`:
+   ![Bookinfo App](assets/images/bookinfo.PNG)
+
+### Paso 2: Crear una ruta y un Ingress
+
+1. Crear una Ruta
+- Dirígete al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Routes**.
+- Haz clic en el botón **Create Route**, lo que abrirá un formulario para definir una nueva ruta.
+
+   ![Productpage Route](assets/images/productpage_route.PNG)
+
+- Una vez creada la ruta, OpenShift generará automáticamente una **location** para la ruta hacia el exterior. Copia y guarda este valor, ya que lo necesitarás en el siguiente paso.
+
+   ![Productpage Route Location](assets/images/productpage_route_location.PNG)
+
+2. Crear un Ingress
+- Ve al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Ingress**.
+- Haz clic en el botón **Create Ingress**, lo que abrirá un formulario con un editor YAML para definir un nuevo Ingress.
+
+   ![Productpage Ingress](assets/images/productpage_ingress.PNG)
+
+- Define el siguiente manifiesto YAML para el `Ingress`:  
+
 ```yaml
 kind: Ingress
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: example
-  namespace: marcoglorioso1594-dev
+  name: bookinfo
+  namespace: <YOUR PROJECT NAME>
 spec:
   rules:
-    - host: productpage-marcoglorioso1594-dev.apps.sandbox-m3.1530.p1.openshiftapps.com
+    - host: <ROUTE LOCATION>
       http:
         paths:
           - path: /productpage
@@ -249,8 +271,14 @@ status:
       - hostname: router-default.apps.sandbox-m3.1530.p1.openshiftapps.com
 ```
 
-### Verificación
-- Accede a la URL proporcionada para la aplicación y confirma que los diferentes servicios están operativos.
+La **ruta** en OpenShift define el acceso externo al clúster, permitiendo que los usuarios fuera del clúster interactúen con los servicios desplegados. Por otro lado, el **ingress** establece los diferentes endpoints habilitados dentro del clúster para nuestra aplicación **Bookinfo**, definiendo cómo se enrutan las solicitudes internas y externas hacia los distintos servicios de la aplicación.
+
+Además, las rutas suelen incluir configuraciones de seguridad como certificados SSL/TLS para proteger el tráfico, mientras que el ingress puede gestionar múltiples rutas internas basadas en reglas específicas, como nombres de host o rutas URL. Esto proporciona flexibilidad y control en la gestión del tráfico dentro y fuera del clúster.
+
+### **Verificación**
+1. Accede a la URL proporcionada en el campo **Route Location**, seguido de la ruta **/productpage**, desde tu navegador, para visualizar la aplicación y confirmar que los diferentes servicios están operativos.
+
+2. Si deseas habilitar una URL segura mediante **HTTPS**, modifica la Route creada previamente y activa el soporte para **TLS**. Esto garantizará un tráfico cifrado y seguro hacia la aplicación.
 
 ## Lab 7: Autoescalado Horizontal (Horizontal Pod Autoscaler - HPA)
 
