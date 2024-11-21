@@ -206,25 +206,24 @@ oc debug deployment/python-39
 
    ![Bookinfo App](assets/images/bookinfo.PNG)
 
-### Paso 2: Crear una ruta y un Ingress
+### Paso 2: Crear una ruta
 
-1. Crear una Ruta
-- Dirígete al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Routes**.
-- Haz clic en el botón **Create Route**, lo que abrirá un formulario para definir una nueva ruta.
+1. Dirígete al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Routes**.
+2. Haz clic en el botón **Create Route**, lo que abrirá un formulario para definir una nueva ruta.
 
    ![Productpage Route](assets/images/productpage_route.PNG)
 
-- Una vez creada la ruta, OpenShift generará automáticamente una **location** para la ruta hacia el exterior. Copia y guarda este valor, ya que lo necesitarás en el siguiente paso.
+3. Una vez creada la ruta, OpenShift generará automáticamente una **location** para la ruta hacia el exterior. Copia y guarda este valor, ya que lo necesitarás en el siguiente paso.
 
    ![Productpage Route Location](assets/images/productpage_route_location.PNG)
 
-2. Crear un Ingress
-- Ve al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Ingress**.
-- Haz clic en el botón **Create Ingress**, lo que abrirá un formulario con un editor YAML para definir un nuevo Ingress.
+### Paso 3: Crear un Ingress
+1. Ve al menú lateral derecho, en modo **Administrador**, dentro de la sección **Networking** > **Ingress**.
+2. Haz clic en el botón **Create Ingress**, lo que abrirá un formulario con un editor YAML para definir un nuevo Ingress.
 
    ![Productpage Ingress](assets/images/productpage_ingress.PNG)
 
-- Define el siguiente manifiesto YAML para el `Ingress`:  
+3. Define el siguiente manifiesto YAML para el `Ingress`:  
 
 ```yaml
 kind: Ingress
