@@ -82,7 +82,7 @@ El comando fallará debido a la ausencia de un archivo de configuración necesar
   ```
   > Este comando importa una imagen Docker del registro de Red Hat al registro local de OpenShift.
 
-  Puedes ver el objeto **ImageStream** recién descargado en el menú lateral derecho, en modo **Administrador**, dentro de la sección **Builds**. Allí encontrarás un objeto llamado **python-39**. En la sección **YAML**, podrás visualizar un manifiesto YAML del tipo **ImageStream**, correspondiente a la API `image.openshift.io/v1`. Más abajo, encontrarás todos los detalles relacionados con la imagen Docker descargada.
+  Puedes ver el objeto **ImageStream** recién descargado en el menú lateral derecho, en modo **Administrador**, dentro de la sección **ImageStream**. Allí encontrarás un objeto llamado **python-39**. En la sección **YAML**, podrás visualizar un manifiesto YAML del tipo **ImageStream**, correspondiente a la API `image.openshift.io/v1`. Más abajo, encontrarás todos los detalles relacionados con la imagen Docker descargada.
 
 2. Crear una nueva aplicación desde la imagen:
   ```bash
